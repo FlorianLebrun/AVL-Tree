@@ -11,7 +11,6 @@
 *   - left: TNode*
 *   - right: TNode*
 *   - height: integer
-*   - compare: int compare(TKey key)
 *
 * All functions take the tree root in firast argument, and can return the new root.
 *
