@@ -1,11 +1,1 @@
-/.vs
-*.tlog
-*.obj
-*.pdb
-*.iobj
-*.ipdb
-*.idb
-*.ilk
-*.log
-*.enc
-*.exe
+/.build

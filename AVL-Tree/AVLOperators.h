@@ -3,6 +3,14 @@
 
 #include <stdint.h>
 
+template <class TNode>
+struct AVLDefaultHandler {
+  typedef TNode* Node;
+  static Node& left(Node node) {return node->left;}
+  static Node& right(Node node) {return node->right;}
+  static int& height(Node node) {return node->height;}
+};
+
 /* ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** **
 *
 * AVL Tree Operators
@@ -15,11 +23,12 @@
 * All functions take the tree root in firast argument, and can return the new root.
 *
 ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** **/
-template <class TNode>
+template <class TNode, class TNodeHandler = AVLDefaultHandler<TNode>>
 class AVLOperators {
 
 public:
   typedef TNode* Node;
+  typedef TNodeHandler At;
 
   struct IComparable {
     virtual int compare(Node node) = 0;
@@ -32,40 +41,40 @@ public:
   static bool checkConsistency(Node root) {
     if (!root) return true;
     int height = getSubHeight(root) + 1;
-    if (root->height != height) return false;
+    if (At::height(root) != height) return false;
     int balance = getBalance(root);
     if (balance < -1 || balance > 1) return false;
-    return checkConsistency(root->left) && checkConsistency(root->right);
+    return checkConsistency(At::left(root)) && checkConsistency(At::right(root));
   }
 
   static int count(Node root)
   {
     if (!root) return 0;
     int n = 1;
-    n += count(root->left);
-    n += count(root->right);
+    n += count(At::left(root));
+    n += count(At::right(root));
     return n;
   }
 
   static Node removeAtMinimum(Node root, Node& result) {
-    if (root->left) {
-      root->left = removeAtMinimum(root->left, result);
+    if (At::left(root)) {
+      At::left(root) = removeAtMinimum(At::left(root), result);
       return rebalance(root);
     }
     else {
       result = root;
-      return root->right;
+      return At::right(root);
     }
   }
 
   static Node removeAtMaximum(Node root, Node& result) {
-    if (root->right) {
-      root->right = removeAtMaximum(root->right, result);
+    if (At::right(root)) {
+      At::right(root) = removeAtMaximum(At::right(root), result);
       return rebalance(root);
     }
     else {
       result = root;
-      return root->left;
+      return At::left(root);
     }
   }
 
@@ -80,24 +89,24 @@ public:
     // Remove key from sub tree
     int c = comparable->compare(root);
     if (c > 0) {
-      root->right = removeAt(root->right, comparable, result);
+      At::right(root) = removeAt(At::right(root), comparable, result);
       return rebalance(root);
     }
     else if (c < 0) {
-      root->left = removeAt(root->left, comparable, result);
+      At::left(root) = removeAt(At::left(root), comparable, result);
       return rebalance(root);
     }
     else {
       result = root;
-      if (root->left && root->right) {
+      if (At::left(root) && At::right(root)) {
         Node new_root;
-        root->right = removeAtMinimum(root->right, new_root);
-        new_root->left = root->left;
-        new_root->right = root->right;
+        At::right(root) = removeAtMinimum(At::right(root), new_root);
+        At::left(new_root) = At::left(root);
+        At::right(new_root) = At::right(root);
         return rebalance(new_root);
       }
       else {
-        return reinterpret_cast<Node>(uintptr_t(root->right) | uintptr_t(root->left));
+        return reinterpret_cast<Node>(uintptr_t(At::right(root)) | uintptr_t(At::left(root)));
       }
     }
   }
@@ -113,10 +122,10 @@ public:
     // Find key from sub tree
     int c = comparable->compare(root);
     if (c > 0) {
-      findAt(root->right, comparable, result);
+      findAt(At::right(root), comparable, result);
     }
     else if (c < 0) {
-      findAt(root->left, comparable, result);
+      findAt(At::left(root), comparable, result);
     }
     else {
       result = root;
@@ -128,9 +137,9 @@ public:
     // New node location reached
     if (root == 0) {
       if (result = insertable->create(0)) {
-        result->height = 1;
-        result->left = 0;
-        result->right = 0;
+        At::height(result) = 1;
+        At::left(result) = 0;
+        At::right(result) = 0;
       }
       return result;
     }
@@ -138,18 +147,18 @@ public:
     // Perform the insertion
     int c = insertable->compare(root);
     if (c < 0) {
-      root->left = insertAt(root->left, insertable, result);
+      At::left(root) = insertAt(At::left(root), insertable, result);
       return rebalance(root);
     }
     else if (c > 0) {
-      root->right = insertAt(root->right, insertable, result);
+      At::right(root) = insertAt(At::right(root), insertable, result);
       return rebalance(root);
     }
     else {
       if (result = insertable->create(root)) {
-        result->height = root->height;
-        result->left = root->left;
-        result->right = root->right;
+        At::height(result) = At::height(root);
+        At::left(result) = At::left(root);
+        At::right(result) = At::right(root);
         return result;
       }
       return root;
@@ -159,50 +168,50 @@ public:
 private:
 
   static int getSubHeight(Node node) {
-    Node right = node->right;
-    if (Node left = node->left) {
+    Node right = At::right(node);
+    if (Node left = At::left(node)) {
       if (right) {
-        if (left->height > right->height) return left->height;
-        else return right->height;
+        if (At::height(left) > At::height(right)) return At::height(left);
+        else return At::height(right);
       }
-      else return left->height;
+      else return At::height(left);
     }
     else {
-      if (right) return right->height;
+      if (right) return At::height(right);
       else return 0;
     }
   }
   static int getBalance(Node node) {
-    int balance = node->left ? node->left->height : 0;
-    if (node->right) return balance - node->right->height;
+    int balance = At::left(node) ? At::height(At::left(node)) : 0;
+    if (At::right(node)) return balance - At::height(At::right(node));
     else return balance;
   }
   static Node rightRotate(Node y) {
-    Node x = y->left;
+    Node x = At::left(y);
 
     // Perform rotation
-    Node tmp = x->right;
-    x->right = y;
-    y->left = tmp;
+    Node tmp = At::right(x);
+    At::right(x) = y;
+    At::left(y) = tmp;
 
     // Update heights
-    y->height = getSubHeight(y) + 1;
-    x->height = getSubHeight(x) + 1;
+    At::height(y) = getSubHeight(y) + 1;
+    At::height(x) = getSubHeight(x) + 1;
 
     // Return new root
     return x;
   }
   static Node leftRotate(Node x) {
-    Node y = x->right;
+    Node y = At::right(x);
 
     // Perform rotation
-    Node tmp = y->left;
-    y->left = x;
-    x->right = tmp;
+    Node tmp = At::left(y);
+    At::left(y) = x;
+    At::right(x) = tmp;
 
     // Update heights
-    x->height = getSubHeight(x) + 1;
-    y->height = getSubHeight(y) + 1;
+    At::height(x) = getSubHeight(x) + 1;
+    At::height(y) = getSubHeight(y) + 1;
 
     // Return new root
     return y;
@@ -210,25 +219,25 @@ private:
   static Node rebalance(Node node) {
     int balance = getBalance(node);
     if (balance < -1) {
-      if (getBalance(node->right) <= 0) {
+      if (getBalance(At::right(node)) <= 0) {
         return leftRotate(node);
       }
       else {
-        node->right = rightRotate(node->right);
+        At::right(node) = rightRotate(At::right(node));
         return leftRotate(node);
       }
     }
     else if (balance > 1) {
-      if (getBalance(node->left) >= 0) {
+      if (getBalance(At::left(node)) >= 0) {
         return rightRotate(node);
       }
       else {
-        node->left = leftRotate(node->left);
+        At::left(node) = leftRotate(At::left(node));
         return rightRotate(node);
       }
     }
     else {
-      node->height = getSubHeight(node) + 1;
+      At::height(node) = getSubHeight(node) + 1;
       return node;
     }
   }

@@ -9,12 +9,19 @@ class AVLTree
 public:
 
   struct Node;
-  typedef AVLOperators<Node> AVL;
-
+  struct Handler;
+  typedef AVLOperators<Node, Handler> AVL;
+  
+  struct Handler {
+    static Node*& left(Node* node) {return (Node*&)node->__0;}
+    static Node*& right(Node* node) {return (Node*&)node->__1;}
+    static char& height(Node* node) {return node->__2;}
+  };
+  
   struct Node {
-    Node* left;
-    Node* right;
-    uint16_t height;
+    void* __0;
+    void* __1;
+    char __2;
     int key;
     Node(int d) {
       this->key = d;
@@ -63,7 +70,7 @@ public:
   void print() {
     this->printNode(this->root);
     int count = AVL::count(this->root);
-    printf("height = %d\n", this->root->height);
+    printf("height = %d\n", Handler::height(this->root));
     printf("count = %d\n", count);
   }
 
@@ -74,10 +81,10 @@ private:
   {
     int count = 0;
     if (node != 0) {
-      count += printNode(node->left, level + 1);
+      count += printNode(Handler::left(node), level + 1);
       for (int i = 0; i < level; i++) printf("-");
       printf("- %s\n", node->toString().c_str());
-      count += printNode(node->right, level + 1);
+      count += printNode(Handler::right(node), level + 1);
       count++;
     }
     return count;
