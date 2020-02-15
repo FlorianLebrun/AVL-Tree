@@ -67,7 +67,13 @@ public:
     }
     return false;
   }
-  void print() {
+  void printValues() {
+    AVL::iterator it(this->root);
+    while(Node* node = it.next()) {
+      printf("%s\n", node->toString().c_str());
+    }
+  }
+  void printTree() {
     this->printNode(this->root);
     int count = AVL::count(this->root);
     printf("height = %d\n", Handler::height(this->root));

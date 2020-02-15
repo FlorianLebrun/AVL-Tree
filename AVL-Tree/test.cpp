@@ -34,14 +34,17 @@ void main()
     for (int key : used_keys) {
       tree.insert(key);
     }
-    tree.print();
+    tree.printTree();
+    tree.printValues();
     printf("\n");
 
     // Deletions
     for (int i = min_count; i < max_count; i++) {
       tree.remove(used_keys[i]);
     }
-    tree.print();
+    tree.printTree();
+    tree.printValues();
     printf("\n");
   }
+  getchar();
 }

@@ -37,6 +37,40 @@ public:
     virtual Node create(Node overridden) = 0;
   };
 
+  // Iterator on tree nodes
+  struct iterator {
+  private:
+    Node current;
+    Node stack[32];
+    int level;
+  public:
+    iterator(Node root) {
+      this->current = 0;
+      this->level = 0;
+      for(Node node=root;node;node=At::left(node)) {
+        this->stack[this->level++] = node;
+      }
+    }
+    Node next() {
+      if(this->level > 0) {
+        this->current = this->stack[--this->level];
+        for(Node node=At::right(this->current);node;node=At::left(node)) {
+          this->stack[this->level++] = node;
+        }
+      }
+      else {
+        this->current = 0;
+      }
+      return this->current;
+    }
+    TNode& operator -> () {
+      return *this->current;
+    }
+    Node operator * () {
+      return this->current;
+    }
+  };
+
   // Check Balance factor of sub tree
   static bool checkConsistency(Node root) {
     if (!root) return true;
