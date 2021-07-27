@@ -34,8 +34,8 @@ void main()
     for (int key : used_keys) {
       tree.insert(key);
     }
-    tree.printTree();
-    tree.printValues();
+    //tree.printTree();
+    //tree.printValues();
     printf("\n");
 
     // Deletions
@@ -43,6 +43,11 @@ void main()
       tree.remove(used_keys[i]);
     }
     tree.printTree();
+    tree.printValues();
+    printf("\n");
+
+    // Remove upper
+    tree.removeUpper(220);
     tree.printValues();
     printf("\n");
   }

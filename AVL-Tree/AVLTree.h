@@ -67,9 +67,17 @@ public:
     }
     return false;
   }
+  bool removeUpper(int key) {
+     Node* result;
+     this->root = AVL::removeUpper(this->root, &Key(key), result);
+     if (result) {
+        delete result;
+        return true;
+     }
+     return false;
+  }
   void printValues() {
-    AVL::iterator it(this->root);
-    while(Node* node = it.next()) {
+    for(Node* node : AVL::enumerator(this->root)) {
       printf("%s\n", node->toString().c_str());
     }
   }
