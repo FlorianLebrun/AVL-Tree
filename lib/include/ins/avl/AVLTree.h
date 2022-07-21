@@ -1,9 +1,9 @@
-#ifndef AVL_Tree_h_
-#define AVL_Tree_h_
-
+#pragma once
 #include "./AVLOperators.h"
 #include <string>
 
+namespace ins {
+   
 class AVLTree
 {
 public:
@@ -105,4 +105,4 @@ private:
   }
 };
 
-#endif
+}

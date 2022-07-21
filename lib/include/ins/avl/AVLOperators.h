@@ -1,7 +1,7 @@
-#ifndef __AVL_Tree_Operators__
-#define __AVL_Tree_Operators__
-
+#pragma once
 #include <stdint.h>
+
+namespace ins {
 
 template <class TNode>
 struct AVLDefaultHandler {
@@ -343,4 +343,4 @@ private:
    }
 };
 
-#endif
+}

@@ -1,4 +1,4 @@
-#include "./AVLTree.h"
+#include <ins/avl/AVLTree.h>
 #include <stdlib.h>
 #include <vector>
 
